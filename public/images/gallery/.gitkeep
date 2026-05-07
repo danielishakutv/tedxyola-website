@@ -1,0 +1,17 @@
+# Gallery Directory
+
+Place event photos here.
+
+**Requirements:**
+- Size: 1920x1080px or larger (16:9 aspect ratio preferred)
+- Format: JPG
+- Naming: Use descriptive names (e.g., `2025-opening-ceremony.jpg`)
+- File size: Optimize to under 500KB per image
+
+**Example structure:**
+```
+placeholder-1.jpg
+placeholder-2.jpg
+2025-opening-ceremony.jpg
+2025-speaker-talk.jpg
+```

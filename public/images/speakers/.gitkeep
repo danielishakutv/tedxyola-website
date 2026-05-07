@@ -1,0 +1,17 @@
+# Speakers Directory
+
+Place speaker headshots here.
+
+**Requirements:**
+- Size: 800x800px (square, 1:1 aspect ratio)
+- Format: JPG or PNG
+- Naming: Use lowercase with hyphens (e.g., `john-doe.jpg`)
+- File size: Optimize to under 200KB per image
+
+**Example structure:**
+```
+placeholder-1.jpg
+placeholder-2.jpg
+amina-abdullahi.jpg
+chidi-okonkwo.jpg
+```
