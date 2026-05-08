@@ -9,12 +9,14 @@ import {
   Mail,
   Loader2,
 } from 'lucide-react';
+import type { ActivityGoogleForm } from '@/content/activities';
 
 interface TicketModalProps {
   isOpen: boolean;
   onClose: () => void;
   ticketUrl: string;
   eventTitle?: string;
+  googleForm?: ActivityGoogleForm;
 }
 
 export const TicketModal = ({
@@ -22,6 +24,7 @@ export const TicketModal = ({
   onClose,
   ticketUrl,
   eventTitle,
+  googleForm,
 }: TicketModalProps) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -77,11 +80,34 @@ export const TicketModal = ({
     }
     setErrors({});
     setSubmitting(true);
+
+    const cleanName = name.trim();
+    const cleanPhone = phone.replace(/\D/g, '');
+    const cleanEmail = email.trim();
+
+    if (googleForm) {
+      const fd = new FormData();
+      fd.set(googleForm.fields.fullname, cleanName);
+      fd.set(googleForm.fields.phone, cleanPhone);
+      fd.set(googleForm.fields.email, cleanEmail);
+      Object.entries(googleForm.hidden ?? {}).forEach(([k, v]) => fd.set(k, v));
+      try {
+        fetch(googleForm.actionUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          keepalive: true,
+          body: fd,
+        }).catch(() => {});
+      } catch {
+        // best-effort logging; never block the selar redirect
+      }
+    }
+
     const params = new URLSearchParams({
       add_to_cart: '1',
-      email: email.trim(),
-      fullname: name.trim(),
-      mobile: phone.replace(/\D/g, ''),
+      email: cleanEmail,
+      fullname: cleanName,
+      mobile: cleanPhone,
     });
     window.location.href = `${ticketUrl}?${params.toString()}`;
   };

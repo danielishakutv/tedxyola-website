@@ -164,6 +164,7 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
         onClose={() => setIsTicketModalOpen(false)}
         ticketUrl={activity.ticketHref}
         eventTitle={activity.title}
+        googleForm={activity.googleForm}
       />
     )}
   </article>

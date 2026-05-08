@@ -259,6 +259,7 @@ export const SipNPaintPage = () => {
         onClose={() => setIsTicketModalOpen(false)}
         ticketUrl={ticketHref}
         eventTitle={event.title}
+        googleForm={event.googleForm}
       />
     </>
   );

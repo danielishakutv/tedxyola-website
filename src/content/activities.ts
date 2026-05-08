@@ -2,6 +2,16 @@ export type ActivityPhase = 'pre-event' | 'main-event' | 'post-event';
 
 export type ActivityStatus = 'announced' | 'open' | 'closed' | 'past';
 
+export interface ActivityGoogleForm {
+  actionUrl: string;
+  fields: {
+    fullname: string;
+    phone: string;
+    email: string;
+  };
+  hidden?: Record<string, string>;
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -22,6 +32,7 @@ export interface Activity {
   ctaLabel?: string;
   ctaLink?: string;
   poweredBy?: string;
+  googleForm?: ActivityGoogleForm;
 }
 
 export const activities: Activity[] = [
@@ -32,10 +43,10 @@ export const activities: Activity[] = [
     phase: 'pre-event',
     date: 'Saturday, 23rd May 2026',
     time: '4:00 PM Prompt',
-    venue: 'Metro Center, Suntai Road, Karewa',
+    venue: 'Toko Academy, Bekaji Main Road, Jimeta, Yola',
     city: 'Yola, Adamawa',
     thumbnail:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3C2-s4qthkb1HG4NH4F-pa49Ghz6iXaFWzw&s',
+      '/images/activities/snp_thumbnail.svg',
     description:
       "An IGNITE pre-event where art meets ideas. Bring your curiosity, paint your thoughts onto canvas, and meet the TEDxYola community over light refreshments, karaoke, and networking — no painting experience required.",
     highlights: [
@@ -50,6 +61,20 @@ export const activities: Activity[] = [
     ticketHref: 'https://selar.com/y77699111h',
     detailsHref: '/snp',
     poweredBy: 'Toko Academy Ltd.',
+    googleForm: {
+      actionUrl:
+        'https://docs.google.com/forms/d/e/1FAIpQLSfPZDuA3A7cButLXd3MB8bV8d00IqClIEXZvwsUD7sMfayrLg/formResponse',
+      fields: {
+        fullname: 'entry.1490570247',
+        phone: 'entry.263556657',
+        email: 'entry.675258623',
+      },
+      hidden: {
+        fvv: '1',
+        fbzx: '-1304986757629354313',
+        pageHistory: '0',
+      },
+    },
   },
   {
     id: 'campus-micro-chats-mau',
