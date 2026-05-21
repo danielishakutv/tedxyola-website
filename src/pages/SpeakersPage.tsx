@@ -3,14 +3,55 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Section } from '@/components/common/Section';
 import { SpeakerGrid } from '@/components/speakers/SpeakerGrid';
-import { speakers } from '@/content/speakers';
+import { SpeakerGridSkeleton } from '@/components/speakers/SpeakerGridSkeleton';
+import { useSpeakers } from '@/hooks/useSpeakers';
 import { siteConfig } from '@/content/siteConfig';
 import { Mic } from 'lucide-react';
 
 export const SpeakersPage = () => {
+  const { speakers, loading, error, refetch } = useSpeakers();
+
   useEffect(() => {
     document.title = `Speakers - ${siteConfig.eventName}`;
   }, []);
+
+  const renderSpeakers = () => {
+    if (loading && speakers.length === 0) {
+      return <SpeakerGridSkeleton count={8} />;
+    }
+
+    if (error && speakers.length === 0) {
+      return (
+        <div className="text-center max-w-2xl mx-auto">
+          <p className="text-xl text-white/70 mb-6">
+            We couldn't load the speakers right now. Please try again.
+          </p>
+          <button
+            onClick={refetch}
+            className="inline-flex px-6 py-3 bg-ted-red text-white font-semibold rounded-full hover:bg-red-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    if (speakers.length === 0) {
+      return (
+        <div className="text-center max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold font-display mb-4">
+            Speakers Coming Soon
+          </h2>
+          <p className="text-xl text-white/70">
+            Our {siteConfig.eventYear} speaker lineup is being finalised. Check
+            back soon to meet the visionaries taking the stage.
+          </p>
+        </div>
+      );
+    }
+
+    return <SpeakerGrid speakers={speakers} />;
+  };
 
   return (
     <div>
@@ -44,9 +85,7 @@ export const SpeakersPage = () => {
       </Section>
 
       {/* Speakers Grid */}
-      <Section background="black">
-        <SpeakerGrid speakers={speakers} />
-      </Section>
+      <Section background="black">{renderSpeakers()}</Section>
 
       {/* Call to Action */}
       <Section background="white" className="text-black">

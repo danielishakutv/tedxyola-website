@@ -163,6 +163,16 @@
     text-wrap: balance;
   }
 
+  /* Hide scrollbar while keeping the element scrollable */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
   /* Animation delay utilities */
   .animation-delay-100 {
     animation-delay: 100ms;

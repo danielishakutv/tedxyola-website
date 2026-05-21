@@ -13,14 +13,14 @@ export const SpeakerGrid = ({ speakers }: SpeakerGridProps) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
         {speakers.map((speaker, index) => (
           <motion.div
             key={speaker.id}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.05 }}
           >
             <SpeakerCard
               speaker={speaker}
