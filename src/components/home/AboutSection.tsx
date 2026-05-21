@@ -74,8 +74,8 @@ export const AboutSection = () => {
 
             <div className="relative z-10 text-center flex flex-col items-center justify-center">
               <img 
-                src="./logo-white.png" 
-                alt="TEDxYola" 
+                src="/logo-white.png"
+                alt="TEDxYola"
                 className="w-full max-w-md h-auto mb-6"
                 loading="lazy"
                 decoding="async"

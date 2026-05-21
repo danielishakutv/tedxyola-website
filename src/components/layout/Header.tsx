@@ -49,7 +49,7 @@ export const Header = () => {
             className="flex items-center text-white group"
           >
             <img 
-              src="./logo-white.png" 
+              src="/logo-white.png"
               alt="TEDxYola" 
               className="h-14 lg:h-12 w-auto"
               decoding="async"

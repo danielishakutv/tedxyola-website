@@ -125,8 +125,8 @@ export const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="inline-block">
               <img 
-                src="./logo-white.png" 
-                alt="TEDxYola" 
+                src="/logo-white.png"
+                alt="TEDxYola"
                 className="h-12 w-auto"
                 loading="lazy"
                 decoding="async"
