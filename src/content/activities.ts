@@ -27,6 +27,7 @@ export interface Activity {
   capacity?: string;
   status: ActivityStatus;
   ticketPrice?: string;
+  originalPrice?: string;
   ticketHref?: string;
   detailsHref?: string;
   ctaLabel?: string;
@@ -58,6 +59,7 @@ export const activities: Activity[] = [
     capacity: 'Seating is limited and strictly by registration',
     status: 'open',
     ticketPrice: '₦5,000',
+    originalPrice: '₦8,500',
     ticketHref: 'https://selar.com/y77699111h',
     detailsHref: '/snp',
     poweredBy: 'Toko Academy Ltd.',

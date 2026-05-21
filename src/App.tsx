@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { useScrollToTop } from './hooks/useScrollToTop';
+import { useMatomoPageTracking } from './hooks/useMatomoPageTracking';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -29,6 +30,7 @@ const LoadingScreen = () => (
 
 const AppRoutes = () => {
   useScrollToTop();
+  useMatomoPageTracking();
 
   return (
     <Layout>

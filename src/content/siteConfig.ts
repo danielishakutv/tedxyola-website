@@ -38,8 +38,8 @@ export const siteConfig: SiteConfig = {
   eventDate: 'June 20, 2026',
   eventYear: 2026,
   venue: {
-    name: 'Yola International Conference Center',
-    address: 'TBD',
+    name: 'Coming Soon',
+    address: 'Coming Soon',
     city: 'Yola',
     state: 'Adamawa',
     country: 'Nigeria',

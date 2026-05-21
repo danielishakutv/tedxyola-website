@@ -14,6 +14,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  BadgePercent,
 } from 'lucide-react';
 import { activities } from '@/content/activities';
 import { siteConfig } from '@/content/siteConfig';
@@ -31,6 +32,13 @@ const importantNotes = [
   'Seating is limited and strictly by registration',
   'No painting experience needed',
 ];
+
+/** Pull the numeric value out of a formatted price string like "₦5,000". */
+const parsePrice = (value?: string): number | null => {
+  if (!value) return null;
+  const num = Number.parseFloat(value.replace(/[^0-9.]/g, ''));
+  return Number.isFinite(num) ? num : null;
+};
 
 export const SipNPaintPage = () => {
   const event = activities.find((a) => a.id === 'sip-n-paint');
@@ -52,6 +60,13 @@ export const SipNPaintPage = () => {
   const ticketHref = event.ticketHref ?? '';
   const openTicketModal = () => setIsTicketModalOpen(true);
 
+  const currentPrice = parsePrice(event.ticketPrice);
+  const originalPrice = parsePrice(event.originalPrice);
+  const discountPercent =
+    currentPrice !== null && originalPrice !== null && originalPrice > currentPrice
+      ? Math.round((1 - currentPrice / originalPrice) * 100)
+      : null;
+
   return (
     <>
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -64,6 +79,14 @@ export const SipNPaintPage = () => {
           className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/85 to-purple-900/70"
           aria-hidden
         />
+
+        {/* Decorative animated paint blobs — pure transform/opacity for smooth, fast motion */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
+          <span className="absolute top-20 left-[8%] w-24 h-24 rounded-full bg-ted-red/30 blur-2xl animate-float" />
+          <span className="absolute top-1/3 right-[12%] w-36 h-36 rounded-full bg-purple-500/25 blur-3xl animate-float animation-delay-300" />
+          <span className="absolute bottom-24 left-1/4 w-20 h-20 rounded-full bg-pink-500/25 blur-2xl animate-pulse-glow animation-delay-200" />
+          <span className="absolute bottom-1/3 right-1/4 w-16 h-16 rounded-full bg-yellow-400/20 blur-2xl animate-float animation-delay-500" />
+        </div>
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
           <Link
@@ -98,6 +121,35 @@ export const SipNPaintPage = () => {
               </span>
             </p>
 
+            {currentPrice !== null && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.35, ease: 'easeOut' }}
+                className="inline-flex flex-col items-start gap-4 mb-10 p-6 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl"
+              >
+                {discountPercent !== null && (
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-ted-red text-white text-xs sm:text-sm font-extrabold uppercase tracking-widest shadow-lg shadow-ted-red/40 animate-pulse-glow">
+                    <BadgePercent className="w-4 h-4" />
+                    Save {discountPercent}%
+                  </span>
+                )}
+                <div className="flex items-end gap-4">
+                  <span className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white leading-none tracking-tight">
+                    {event.ticketPrice}
+                  </span>
+                  {event.originalPrice && (
+                    <span className="text-2xl sm:text-3xl font-bold text-white/45 line-through decoration-ted-red decoration-[3px] mb-1.5">
+                      {event.originalPrice}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm sm:text-base text-white/75 font-medium">
+                  Limited early-bird price — per seat
+                </p>
+              </motion.div>
+            )}
+
             <div className="flex flex-wrap gap-4">
               <button
                 type="button"
@@ -123,21 +175,21 @@ export const SipNPaintPage = () => {
               transition={{ duration: 0.5 }}
               className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16"
             >
-              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
+              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-ted-red/40">
                 <Calendar className="w-6 h-6 text-ted-red mb-3" />
                 <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
                   Date
                 </p>
                 <p className="font-semibold text-gray-900">{event.date}</p>
               </div>
-              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
+              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-ted-red/40">
                 <Clock className="w-6 h-6 text-ted-red mb-3" />
                 <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
                   Time
                 </p>
                 <p className="font-semibold text-gray-900">{event.time}</p>
               </div>
-              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50">
+              <div className="p-6 rounded-2xl border border-gray-200 bg-gray-50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-ted-red/40">
                 <MapPin className="w-6 h-6 text-ted-red mb-3" />
                 <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
                   Venue
@@ -223,9 +275,26 @@ export const SipNPaintPage = () => {
               <h2 className="text-3xl md:text-4xl font-bold mb-3">
                 Ready to paint your thoughts?
               </h2>
-              <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">
+              <p className="text-white/90 text-lg mb-4 max-w-xl mx-auto">
                 Reserve your seat now — registration is required and seats are limited.
               </p>
+              {currentPrice !== null && (
+                <p className="text-lg sm:text-xl mb-8">
+                  Just{' '}
+                  <span className="font-extrabold text-white">{event.ticketPrice}</span>
+                  {event.originalPrice && (
+                    <>
+                      {' '}
+                      <span className="line-through text-white/60 font-semibold">
+                        {event.originalPrice}
+                      </span>
+                    </>
+                  )}
+                  {discountPercent !== null && (
+                    <span className="font-bold text-white"> · Save {discountPercent}%</span>
+                  )}
+                </p>
+              )}
               <button
                 type="button"
                 onClick={openTicketModal}
