@@ -329,6 +329,7 @@ export const SipNPaintPage = () => {
         ticketUrl={ticketHref}
         eventTitle={event.title}
         googleForm={event.googleForm}
+        soldOut={event.soldOut}
       />
     </>
   );

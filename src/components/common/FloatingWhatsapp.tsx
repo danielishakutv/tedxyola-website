@@ -1,97 +1,116 @@
-import { useEffect, useState } from 'react';
-import { MessageCircle, Bot, HelpCircle, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 
-const WHATSAPP_CHANNEL_URL = 'https://whatsapp.com/channel/0029VbArklVAjPXUYhwhF30L';
+// WhatsApp contacts. Numbers are stored in international format (no +, spaces or
+// leading zero) for the wa.me deep link, with a pretty label for display.
+const CONTACTS = [
+  { label: 'TEDxYola Team', display: '+234 814 060 4326', number: '2348140604326' },
+  { label: 'TEDxYola Support', display: '+234 803 273 1983', number: '2348032731983' },
+];
+
+const PREFILLED_MESSAGE = encodeURIComponent(
+  "Hello TEDxYola! I'd like to make an enquiry.",
+);
+
+// WhatsApp glyph (lucide has no brand icon for it).
+const WhatsAppIcon = ({ className = '' }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+    <path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413z" />
+  </svg>
+);
 
 export const FloatingWhatsapp = () => {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Reveal the button shortly after load so it doesn't compete with the hero.
   useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 5000); // show after ~3s
+    const timer = setTimeout(() => setVisible(true), 2500);
     return () => clearTimeout(timer);
   }, []);
 
+  // Close the popup when clicking outside or pressing Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
   return (
     <div
-      className={`fixed right-2 bottom-2 sm:right-4 sm:bottom-4 md:right-6 md:bottom-6 z-[1100] transition-all duration-300 ${
-        visible && !dismissed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+      ref={containerRef}
+      className={`fixed right-3 bottom-3 sm:right-5 sm:bottom-5 z-[1100] flex flex-col items-end transition-all duration-300 ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
       }`}
-      aria-hidden={!visible || dismissed}
     >
-      {/* Options bubble */}
+      {/* Contact options popup */}
       <div
-        className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ${
-          open ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        className={`mb-3 w-64 origin-bottom-right overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all duration-200 ${
+          open ? 'opacity-100 scale-100 translate-y-0' : 'pointer-events-none opacity-0 scale-95 translate-y-2'
         }`}
+        role="dialog"
+        aria-label="Chat with us on WhatsApp"
         aria-hidden={!open}
       >
-        {/* WhatsApp Channel */}
-        <a
-          href={WHATSAPP_CHANNEL_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center gap-3 bg-white text-gray-900 rounded-full shadow-lg px-4 py-2 hover:bg-gray-100 transition-colors"
-        >
-          <span className="text-sm font-medium">WhatsApp Channel</span>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#25D366]/10 group-hover:bg-[#25D366]/20 transition-colors">
-            <MessageCircle className="w-5 h-5 text-[#25D366]" />
+        {/* Header */}
+        <div className="flex items-center gap-2 bg-[#075E54] px-4 py-3 text-white">
+          <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold">Chat with us</p>
+            <p className="text-[11px] text-white/70">Typically replies within minutes</p>
           </div>
-        </a>
+        </div>
 
-        {/* Yola AI */}
-        <button
-          type="button"
-          className="group flex items-center gap-3 bg-white text-gray-900 rounded-full shadow-lg px-4 py-2 hover:bg-gray-100 transition-colors"
-          aria-label="Yola AI"
-        >
-          <span className="text-sm font-medium">Yola AI</span>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-purple-600/10 group-hover:bg-purple-600/20 transition-colors">
-            <Bot className="w-5 h-5 text-purple-600" />
-          </div>
-        </button>
-
-        {/* Inquiries */}
-        <button
-          type="button"
-          className="group flex items-center gap-3 bg-white text-gray-900 rounded-full shadow-lg px-4 py-2 hover:bg-gray-100 transition-colors"
-          aria-label="Inquiries"
-        >
-          <span className="text-sm font-medium">Inquiries</span>
-          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-900/10 group-hover:bg-gray-900/20 transition-colors">
-            <HelpCircle className="w-5 h-5 text-gray-900" />
-          </div>
-        </button>
+        {/* Contacts */}
+        <div className="divide-y divide-gray-100">
+          {CONTACTS.map((c) => (
+            <a
+              key={c.number}
+              href={`https://wa.me/${c.number}?text=${PREFILLED_MESSAGE}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50"
+            >
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#25D366]/10">
+                <WhatsAppIcon className="h-5 w-5 text-[#25D366]" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-gray-900">{c.label}</span>
+                <span className="block text-xs text-gray-500">{c.display}</span>
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
 
-      {/* Main FAB + Dismiss */}
-      <div className="relative">
-        {/* Dismiss button */}
-        <button
-          type="button"
-          aria-label="Dismiss widget"
-          onClick={() => setDismissed(true)}
-          className="absolute -top-3 -left-7 sm:-top-2 sm:-left-4 w-9 h-9 sm:w-6 sm:h-6 rounded-full bg-black text-white shadow-md flex items-center justify-center hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-black/30"
-        >
-          <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-        </button>
-        {/* FAB */}
-        <button
-          type="button"
-          aria-label={open ? 'Close WhatsApp options' : 'Open WhatsApp options'}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-xl bg-[#E62B1E] hover:bg-red-700 text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-4 focus:ring-red-500/40"
-        >
-          <span className={`absolute inset-0 flex items-center justify-center transition-opacity ${open ? 'opacity-0' : 'opacity-100'}`}>
-            <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8" />
-          </span>
-          <span className={`absolute inset-0 flex items-center justify-center transition-opacity ${open ? 'opacity-100' : 'opacity-0'}`}>
-            <X className="w-6 h-6 sm:w-7 sm:h-7" />
-          </span>
-        </button>
-      </div>
+      {/* Trigger button (small until clicked) */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label={open ? 'Close WhatsApp contacts' : 'Chat with us on WhatsApp'}
+        className="group flex items-center gap-2 rounded-full bg-[#25D366] py-2.5 pl-3 pr-4 text-white shadow-lg transition-all hover:bg-[#1ebe5d] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/30"
+      >
+        {open ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <WhatsAppIcon className="h-5 w-5" />
+        )}
+        <span className="text-sm font-semibold">{open ? 'Close' : 'Chat with us'}</span>
+      </button>
     </div>
   );
-}
+};

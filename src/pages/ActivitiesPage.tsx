@@ -165,6 +165,7 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
         ticketUrl={activity.ticketHref}
         eventTitle={activity.title}
         googleForm={activity.googleForm}
+        soldOut={activity.soldOut}
       />
     )}
   </article>

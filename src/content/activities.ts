@@ -26,6 +26,8 @@ export interface Activity {
   highlights: string[];
   capacity?: string;
   status: ActivityStatus;
+  /** When true, ticket sales are closed — the form collects details for follow-up instead of redirecting to checkout. */
+  soldOut?: boolean;
   ticketPrice?: string;
   originalPrice?: string;
   ticketHref?: string;
@@ -58,6 +60,7 @@ export const activities: Activity[] = [
     ],
     capacity: 'Seating is limited and strictly by registration',
     status: 'open',
+    soldOut: true,
     ticketPrice: '₦5,000',
     originalPrice: '₦8,500',
     ticketHref: 'https://selar.com/y77699111h',

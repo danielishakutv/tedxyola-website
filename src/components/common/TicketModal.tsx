@@ -8,6 +8,7 @@ import {
   Phone,
   Mail,
   Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 import type { ActivityGoogleForm } from '@/content/activities';
 
@@ -17,6 +18,8 @@ interface TicketModalProps {
   ticketUrl: string;
   eventTitle?: string;
   googleForm?: ActivityGoogleForm;
+  /** When true, sales are closed: capture the user's details and show a sold-out notice instead of redirecting to checkout. */
+  soldOut?: boolean;
 }
 
 export const TicketModal = ({
@@ -25,12 +28,14 @@ export const TicketModal = ({
   ticketUrl,
   eventTitle,
   googleForm,
+  soldOut = false,
 }: TicketModalProps) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,6 +63,7 @@ export const TicketModal = ({
     }
     setErrors({});
     setSubmitting(false);
+    setSubmitted(false);
   }, [isOpen]);
 
   const validate = () => {
@@ -99,8 +105,16 @@ export const TicketModal = ({
           body: fd,
         }).catch(() => {});
       } catch {
-        // best-effort logging; never block the selar redirect
+        // best-effort logging; never block the next step
       }
+    }
+
+    // Sales are closed: keep the captured details for follow-up and show a
+    // sold-out confirmation instead of redirecting to checkout.
+    if (soldOut) {
+      setSubmitting(false);
+      setSubmitted(true);
+      return;
     }
 
     const params = new URLSearchParams({
@@ -111,6 +125,8 @@ export const TicketModal = ({
     });
     window.location.href = `${ticketUrl}?${params.toString()}`;
   };
+
+  const firstName = name.trim().split(/\s+/)[0];
 
   return (
     <AnimatePresence>
@@ -144,16 +160,20 @@ export const TicketModal = ({
 
             <div className="flex items-start justify-between px-6 pt-4 sm:pt-6 pb-2 flex-shrink-0">
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-ted-red font-semibold">
-                  Get Your Ticket
-                </p>
-                {eventTitle && (
-                  <h2
-                    id="ticket-modal-title"
-                    className="text-2xl font-bold text-gray-900 mt-1 truncate"
-                  >
-                    {eventTitle}
-                  </h2>
+                {!submitted && (
+                  <>
+                    <p className="text-xs uppercase tracking-wider text-ted-red font-semibold">
+                      {soldOut ? 'Register Your Interest' : 'Get Your Ticket'}
+                    </p>
+                    {eventTitle && (
+                      <h2
+                        id="ticket-modal-title"
+                        className="text-2xl font-bold text-gray-900 mt-1 truncate"
+                      >
+                        {eventTitle}
+                      </h2>
+                    )}
+                  </>
                 )}
               </div>
               <button
@@ -166,6 +186,29 @@ export const TicketModal = ({
               </button>
             </div>
 
+            {submitted ? (
+              <div className="px-6 pb-[max(env(safe-area-inset-bottom),2rem)] sm:pb-10 pt-2 text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle2 className="h-9 w-9 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Tickets are sold out
+                </h2>
+                <p className="mt-3 text-gray-600 leading-relaxed">
+                  {firstName ? `Thank you, ${firstName}! ` : 'Thank you! '}
+                  {eventTitle ?? 'This event'} is fully booked. We&apos;ve saved
+                  your details and our team will reach out with any updates or
+                  last-minute openings.
+                </p>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mt-7 w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 text-white font-bold rounded-full hover:bg-black transition-colors text-lg"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
             <form
               onSubmit={handleSubmit}
               className="flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] sm:pb-8 pt-2 space-y-5"
@@ -270,21 +313,24 @@ export const TicketModal = ({
                 {submitting ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Redirecting...</span>
+                    <span>{soldOut ? 'Submitting...' : 'Redirecting...'}</span>
                   </>
                 ) : (
                   <>
                     <Ticket className="w-5 h-5" />
-                    <span>Get Ticket</span>
+                    <span>{soldOut ? 'Submit Details' : 'Get Ticket'}</span>
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
 
               <p className="text-xs text-center text-gray-500">
-                You will be redirected to our secure ticketing partner to complete your purchase.
+                {soldOut
+                  ? 'Your details are kept private and used only to contact you about this event.'
+                  : 'You will be redirected to our secure ticketing partner to complete your purchase.'}
               </p>
             </form>
+            )}
           </motion.div>
         </motion.div>
       )}
