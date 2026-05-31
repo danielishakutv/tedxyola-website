@@ -463,6 +463,20 @@ export const TicketsPage = () => {
             onClose={() => setSelectedTier(null)}
             ticketUrl={selectedTier.ticketUrl}
             eventTitle={`${selectedTier.name} — ${selectedTier.price}`}
+            googleForm={{
+              actionUrl:
+                'https://docs.google.com/forms/d/e/1FAIpQLSdw8yqXqQVTHFZNmxaMTDpQhd1IfVqk3qV2dkYdMDR4Nf50HQ/formResponse',
+              fields: {
+                fullname: 'entry.1490570247',
+                phone: 'entry.263556657',
+                email: 'entry.675258623',
+              },
+              hidden: {
+                fvv: '1',
+                fbzx: '-3306221977193950438',
+                pageHistory: '0',
+              },
+            }}
           />
         )}
       </AnimatePresence>
