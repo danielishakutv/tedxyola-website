@@ -37,7 +37,9 @@ export const TicketModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  const scrollableRef = useRef<HTMLElement>(null);
 
+  // Escape key to close
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -47,15 +49,42 @@ export const TicketModal = ({
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
 
+  // iOS-safe body scroll lock: freeze body at current scroll position
   useEffect(() => {
     if (!isOpen) return;
-    const original = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const scrollY = window.scrollY;
+    const body = document.body;
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = original;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
 
+  // Prevent backdrop touchmove from scrolling the page, but allow
+  // scrolling inside the modal's scrollable area
+  useEffect(() => {
+    if (!isOpen) return;
+    const preventScroll = (e: TouchEvent) => {
+      // Allow scrolling if the touch target is inside our scrollable container
+      if (scrollableRef.current && scrollableRef.current.contains(e.target as Node)) {
+        return;
+      }
+      e.preventDefault();
+    };
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    return () => document.removeEventListener('touchmove', preventScroll);
+  }, [isOpen]);
+
+  // Reset form state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       const t = setTimeout(() => firstFieldRef.current?.focus(), 120);
@@ -105,12 +134,10 @@ export const TicketModal = ({
           body: fd,
         }).catch(() => {});
       } catch {
-        // best-effort logging; never block the next step
+        // best-effort; never block the next step
       }
     }
 
-    // Sales are closed: keep the captured details for follow-up and show a
-    // sold-out confirmation instead of redirecting to checkout.
     if (soldOut) {
       setSubmitting(false);
       setSubmitted(true);
@@ -141,23 +168,33 @@ export const TicketModal = ({
           aria-modal="true"
           aria-labelledby="ticket-modal-title"
         >
+          {/* Backdrop — closes modal on click, does NOT scroll page on touch */}
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
+            onTouchEnd={(e) => {
+              // Only close if the touch ended directly on the backdrop
+              if (e.target === e.currentTarget) onClose();
+            }}
             aria-hidden
           />
 
+          {/* Modal sheet */}
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             className="relative w-full sm:max-w-md max-h-[92dvh] sm:max-h-[88dvh] flex flex-col bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
           >
-            <div className="sm:hidden pt-3 pb-1 flex justify-center">
+            {/* Drag handle (mobile) */}
+            <div className="sm:hidden pt-3 pb-1 flex justify-center flex-shrink-0">
               <span className="w-10 h-1.5 rounded-full bg-gray-300" />
             </div>
 
+            {/* Header */}
             <div className="flex items-start justify-between px-6 pt-4 sm:pt-6 pb-2 flex-shrink-0">
               <div className="min-w-0">
                 {!submitted && (
@@ -186,6 +223,7 @@ export const TicketModal = ({
               </button>
             </div>
 
+            {/* Success state */}
             {submitted ? (
               <div className="px-6 pb-[max(env(safe-area-inset-bottom),2rem)] sm:pb-10 pt-2 text-center">
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -209,127 +247,130 @@ export const TicketModal = ({
                 </button>
               </div>
             ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="flex-1 overflow-y-auto overscroll-contain px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] sm:pb-8 pt-2 space-y-5"
-            >
-              <div>
-                <label
-                  htmlFor="ticket-name"
-                  className="block text-sm font-semibold text-gray-800 mb-2"
-                >
-                  Full Name
-                </label>
-                <div className="relative">
-                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                  <input
-                    id="ticket-name"
-                    ref={firstFieldRef}
-                    type="text"
-                    name="name"
-                    autoComplete="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Jane Doe"
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
-                  />
-                </div>
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="ticket-phone"
-                  className="block text-sm font-semibold text-gray-800 mb-2"
-                >
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                  <input
-                    id="ticket-phone"
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="\d{11}"
-                    maxLength={11}
-                    name="phone"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) =>
-                      setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))
-                    }
-                    placeholder="08012345678"
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                      errors.phone ? 'border-red-500' : 'border-gray-300'
-                    } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base tracking-wide`}
-                  />
-                </div>
-                {errors.phone ? (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                ) : (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Must be exactly 11 digits
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="ticket-email"
-                  className="block text-sm font-semibold text-gray-800 mb-2"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                  <input
-                    id="ticket-email"
-                    type="email"
-                    inputMode="email"
-                    name="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed text-lg shadow-lg shadow-ted-red/30"
+              /* Scrollable form — ref used to allow touch-scroll inside */
+              <form
+                ref={scrollableRef as React.RefObject<HTMLFormElement>}
+                onSubmit={handleSubmit}
+                className="flex-1 overflow-y-auto px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] sm:pb-8 pt-2 space-y-5"
+                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>{soldOut ? 'Submitting...' : 'Redirecting...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Ticket className="w-5 h-5" />
-                    <span>{soldOut ? 'Submit Details' : 'Get Ticket'}</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
+                <div>
+                  <label
+                    htmlFor="ticket-name"
+                    className="block text-sm font-semibold text-gray-800 mb-2"
+                  >
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <input
+                      id="ticket-name"
+                      ref={firstFieldRef}
+                      type="text"
+                      name="name"
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Jane Doe"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                        errors.name ? 'border-red-500' : 'border-gray-300'
+                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
+                    />
+                  </div>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
+                </div>
 
-              <p className="text-xs text-center text-gray-500">
-                {soldOut
-                  ? 'Your details are kept private and used only to contact you about this event.'
-                  : 'You will be redirected to our secure ticketing partner to complete your purchase.'}
-              </p>
-            </form>
+                <div>
+                  <label
+                    htmlFor="ticket-phone"
+                    className="block text-sm font-semibold text-gray-800 mb-2"
+                  >
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <input
+                      id="ticket-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="\d{11}"
+                      maxLength={11}
+                      name="phone"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))
+                      }
+                      placeholder="08012345678"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base tracking-wide`}
+                    />
+                  </div>
+                  {errors.phone ? (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Must be exactly 11 digits
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="ticket-email"
+                    className="block text-sm font-semibold text-gray-800 mb-2"
+                  >
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <input
+                      id="ticket-email"
+                      type="email"
+                      inputMode="email"
+                      name="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed text-lg shadow-lg shadow-ted-red/30"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>{soldOut ? 'Submitting...' : 'Redirecting...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Ticket className="w-5 h-5" />
+                      <span>{soldOut ? 'Submit Details' : 'Get Ticket'}</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+
+                <p className="text-xs text-center text-gray-500 pb-2">
+                  {soldOut
+                    ? 'Your details are kept private and used only to contact you about this event.'
+                    : 'You will be redirected to our secure ticketing partner to complete your purchase.'}
+                </p>
+              </form>
             )}
           </motion.div>
         </motion.div>
