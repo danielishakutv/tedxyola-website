@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Star, Zap, Users, Award, Target, Flame, ShoppingBag } from 'lucide-react';
+import { Check, Star, Zap, Award, Target, Flame, ShoppingBag } from 'lucide-react';
 import { Section } from '@/components/common/Section';
 import { siteConfig } from '@/content/siteConfig';
 import { useState } from 'react';
