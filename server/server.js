@@ -9,6 +9,11 @@ import { stmts } from './db.js';
 const PORT = Number(process.env.PORT || 3001);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const JWT_SECRET = process.env.JWT_SECRET;
+const API_KEY = process.env.API_KEY || ''; // optional bearer token for server-to-server
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://tedxyola.com').replace(/\/$/, '');
 const SHORT_PREFIX = process.env.SHORT_PREFIX || '/s';
 const COOKIE_NAME = 'tedx_admin';
@@ -29,6 +34,25 @@ app.set('trust proxy', 1); // behind Apache
 app.use(express.json({ limit: '32kb' }));
 app.use(cookieParser());
 
+// ---------- CORS ----------
+// Allowlist-based. If CORS_ORIGINS is empty, no CORS headers are sent and
+// browser cross-origin requests will fail (server-to-server still works).
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && CORS_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // ---------- helpers ----------
 const SLUG_RE = /^[a-zA-Z0-9_-]{3,40}$/;
 const randomSlug = (len = 6) => {
@@ -39,7 +63,24 @@ const randomSlug = (len = 6) => {
 };
 const buildShortUrl = (slug) => `${PUBLIC_BASE_URL}${SHORT_PREFIX}/${slug}`;
 
+const timingSafeEqual = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+};
+
 const requireAdmin = (req, res, next) => {
+  // Option 1: Authorization: Bearer <API_KEY>  (server-to-server)
+  const auth = req.headers.authorization || '';
+  if (API_KEY && auth.startsWith('Bearer ')) {
+    const presented = auth.slice('Bearer '.length).trim();
+    if (timingSafeEqual(presented, API_KEY)) return next();
+    return res.status(401).json({ error: 'invalid api key' });
+  }
+
+  // Option 2: session cookie (browser admin UI)
   const token = req.cookies[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: 'unauthorized' });
   try {
@@ -207,4 +248,6 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`tedxyola-shortener listening on 127.0.0.1:${PORT}`);
   console.log(`Short prefix: ${SHORT_PREFIX}  Public base: ${PUBLIC_BASE_URL}`);
+  console.log(`API key auth: ${API_KEY ? 'enabled' : 'disabled'}`);
+  console.log(`CORS origins: ${CORS_ORIGINS.length ? CORS_ORIGINS.join(', ') : '(none — same-origin only)'}`);
 });
