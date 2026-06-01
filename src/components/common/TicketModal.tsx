@@ -37,7 +37,7 @@ export const TicketModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const firstFieldRef = useRef<HTMLInputElement>(null);
-  const scrollableRef = useRef<HTMLElement>(null);
+  const scrollableRef = useRef<HTMLDivElement>(null);
 
   // Escape key to close
   useEffect(() => {
@@ -247,129 +247,138 @@ export const TicketModal = ({
                 </button>
               </div>
             ) : (
-              /* Scrollable form — ref used to allow touch-scroll inside */
+              /* Wrap in a form so the sticky button can still submit it */
               <form
-                ref={scrollableRef as React.RefObject<HTMLFormElement>}
                 onSubmit={handleSubmit}
-                className="flex-1 overflow-y-auto px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] sm:pb-8 pt-2 space-y-5"
-                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+                className="flex-1 flex flex-col min-h-0"
               >
-                <div>
-                  <label
-                    htmlFor="ticket-name"
-                    className="block text-sm font-semibold text-gray-800 mb-2"
-                  >
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    <input
-                      id="ticket-name"
-                      ref={firstFieldRef}
-                      type="text"
-                      name="name"
-                      autoComplete="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Jane Doe"
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                        errors.name ? 'border-red-500' : 'border-gray-300'
-                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="ticket-phone"
-                    className="block text-sm font-semibold text-gray-800 mb-2"
-                  >
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    <input
-                      id="ticket-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      pattern="\d{11}"
-                      maxLength={11}
-                      name="phone"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) =>
-                        setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))
-                      }
-                      placeholder="08012345678"
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                        errors.phone ? 'border-red-500' : 'border-gray-300'
-                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base tracking-wide`}
-                    />
-                  </div>
-                  {errors.phone ? (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                  ) : (
-                    <p className="mt-1 text-xs text-gray-500">
-                      Must be exactly 11 digits
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="ticket-email"
-                    className="block text-sm font-semibold text-gray-800 mb-2"
-                  >
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    <input
-                      id="ticket-email"
-                      type="email"
-                      inputMode="email"
-                      name="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
-                      } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed text-lg shadow-lg shadow-ted-red/30"
+                {/* Scrollable fields — button lives OUTSIDE this container */}
+                <div
+                  ref={scrollableRef as React.RefObject<HTMLDivElement>}
+                  className="flex-1 overflow-y-auto px-6 pt-2 pb-4 space-y-5"
+                  style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
                 >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>{soldOut ? 'Submitting...' : 'Redirecting...'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Ticket className="w-5 h-5" />
-                      <span>{soldOut ? 'Submit Details' : 'Get Ticket'}</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
+                  <div>
+                    <label
+                      htmlFor="ticket-name"
+                      className="block text-sm font-semibold text-gray-800 mb-2"
+                    >
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      <input
+                        id="ticket-name"
+                        ref={firstFieldRef}
+                        type="text"
+                        name="name"
+                        autoComplete="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Jane Doe"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
+                      />
+                    </div>
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                    )}
+                  </div>
 
-                <p className="text-xs text-center text-gray-500 pb-2">
-                  {soldOut
-                    ? 'Your details are kept private and used only to contact you about this event.'
-                    : 'You will be redirected to our secure ticketing partner to complete your purchase.'}
-                </p>
+                  <div>
+                    <label
+                      htmlFor="ticket-phone"
+                      className="block text-sm font-semibold text-gray-800 mb-2"
+                    >
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      <input
+                        id="ticket-phone"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="\d{11}"
+                        maxLength={11}
+                        name="phone"
+                        autoComplete="tel"
+                        value={phone}
+                        onChange={(e) =>
+                          setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))
+                        }
+                        placeholder="08012345678"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.phone ? 'border-red-500' : 'border-gray-300'
+                        } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base tracking-wide`}
+                      />
+                    </div>
+                    {errors.phone ? (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Must be exactly 11 digits
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="ticket-email"
+                      className="block text-sm font-semibold text-gray-800 mb-2"
+                    >
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      <input
+                        id="ticket-email"
+                        type="email"
+                        inputMode="email"
+                        name="email"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        } text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red focus:border-transparent text-base`}
+                      />
+                    </div>
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit button — outside the scroll container so Android never
+                    mistakes a tap for a scroll gesture */}
+                <div className="flex-shrink-0 px-6 pt-3 pb-[max(env(safe-area-inset-bottom),1.25rem)] border-t border-gray-100 bg-white">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    style={{ touchAction: 'manipulation', userSelect: 'none' }}
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 active:bg-red-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed text-lg shadow-lg shadow-ted-red/30"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>{soldOut ? 'Submitting...' : 'Redirecting...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Ticket className="w-5 h-5" />
+                        <span>{soldOut ? 'Submit Details' : 'Get Ticket'}</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-center text-gray-400 mt-3">
+                    {soldOut
+                      ? 'Your details are kept private and used only to contact you about this event.'
+                      : 'You will be redirected to our secure ticketing partner to complete your purchase.'}
+                  </p>
+                </div>
               </form>
             )}
           </motion.div>
