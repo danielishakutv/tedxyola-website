@@ -316,7 +316,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
         <section className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
           <h2 className="text-lg font-bold mb-1">Create a short link</h2>
           <p className="text-sm text-gray-500 mb-5">
-            Short URL format: <code className="font-mono">tedxyola.com/8fub3h/your-slug</code>.
+            Short URL format: <code className="font-mono">tedxyola.com/s/your-slug</code>.
             Leave the slug blank to auto-generate one.
           </p>
           <form onSubmit={create} className="grid sm:grid-cols-[1fr_240px_auto] gap-3">

@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT || 3001);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const JWT_SECRET = process.env.JWT_SECRET;
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://tedxyola.com').replace(/\/$/, '');
-const SHORT_PREFIX = process.env.SHORT_PREFIX || '/8fub3h';
+const SHORT_PREFIX = process.env.SHORT_PREFIX || '/s';
 const COOKIE_NAME = 'tedx_admin';
 const COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 const IS_PROD = process.env.NODE_ENV === 'production';
