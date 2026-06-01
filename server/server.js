@@ -4,7 +4,19 @@ import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import QRCode from 'qrcode';
 import rateLimit from 'express-rate-limit';
+import sharp from 'sharp';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { stmts } from './db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOGO_SVG_BUF = fs.readFileSync(path.join(__dirname, 'assets', 'logo.svg'));
+// Inline SVG fragment for the logo (used when serving SVG QR). Sized 0 0 64 64.
+const LOGO_SVG_INLINE = LOGO_SVG_BUF.toString('utf8')
+  .replace(/<\?xml[^>]*\?>/, '')
+  .replace(/<svg[^>]*>/, '')
+  .replace(/<\/svg>\s*$/, '');
 
 const PORT = Number(process.env.PORT || 3001);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -194,21 +206,54 @@ app.delete('/api/admin/links/:slug', requireAdmin, (req, res) => {
 });
 
 // ---------- QR endpoint (public) ----------
+// "H" error correction tolerates ~30% obstruction, so a centred logo
+// covering ~22% of the QR remains reliably scannable.
+const QR_ERR_LEVEL = 'H';
+
 app.get('/api/qr/:slug.png', async (req, res) => {
   const row = stmts.getBySlug.get(req.params.slug);
   if (!row) return res.status(404).send('not found');
   try {
     const size = Math.min(Math.max(Number(req.query.size) || 512, 128), 2048);
-    const buf = await QRCode.toBuffer(buildShortUrl(row.slug), {
+    const noLogo = req.query.logo === '0';
+
+    const qrBuf = await QRCode.toBuffer(buildShortUrl(row.slug), {
       type: 'png',
       width: size,
       margin: 2,
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: QR_ERR_LEVEL,
       color: { dark: '#000000', light: '#FFFFFF' },
     });
+
+    let outBuf = qrBuf;
+    if (!noLogo) {
+      const logoSize = Math.round(size * 0.22);
+      const padSize = Math.round(logoSize * 1.18);
+      const padRadius = Math.round(padSize * 0.18);
+
+      const logoPng = await sharp(LOGO_SVG_BUF)
+        .resize(logoSize, logoSize, { fit: 'contain' })
+        .png()
+        .toBuffer();
+
+      const padSvg = Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${padSize}" height="${padSize}">` +
+          `<rect width="${padSize}" height="${padSize}" rx="${padRadius}" fill="#FFFFFF"/>` +
+          `</svg>`
+      );
+
+      outBuf = await sharp(qrBuf)
+        .composite([
+          { input: padSvg, gravity: 'center' },
+          { input: logoPng, gravity: 'center' },
+        ])
+        .png()
+        .toBuffer();
+    }
+
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.send(buf);
+    res.send(outBuf);
   } catch (e) {
     console.error(e);
     res.status(500).send('qr error');
@@ -219,12 +264,35 @@ app.get('/api/qr/:slug.svg', async (req, res) => {
   const row = stmts.getBySlug.get(req.params.slug);
   if (!row) return res.status(404).send('not found');
   try {
-    const svg = await QRCode.toString(buildShortUrl(row.slug), {
+    const noLogo = req.query.logo === '0';
+    let svg = await QRCode.toString(buildShortUrl(row.slug), {
       type: 'svg',
       margin: 2,
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: QR_ERR_LEVEL,
       color: { dark: '#000000', light: '#FFFFFF' },
     });
+
+    if (!noLogo) {
+      // qrcode emits an SVG with viewBox="0 0 N N" where N is module count + margins.
+      const vbMatch = svg.match(/viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"/);
+      if (vbMatch) {
+        const vb = parseFloat(vbMatch[1]);
+        const logoSize = vb * 0.22;
+        const padSize = logoSize * 1.18;
+        const padRadius = padSize * 0.18;
+        const cx = vb / 2;
+        const cy = vb / 2;
+        const overlay =
+          `<rect x="${cx - padSize / 2}" y="${cy - padSize / 2}" ` +
+            `width="${padSize}" height="${padSize}" rx="${padRadius}" fill="#FFFFFF"/>` +
+          `<svg x="${cx - logoSize / 2}" y="${cy - logoSize / 2}" ` +
+            `width="${logoSize}" height="${logoSize}" viewBox="0 0 64 64">` +
+            LOGO_SVG_INLINE +
+          `</svg>`;
+        svg = svg.replace(/<\/svg>\s*$/, `${overlay}</svg>`);
+      }
+    }
+
     res.setHeader('Content-Type', 'image/svg+xml');
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(svg);
