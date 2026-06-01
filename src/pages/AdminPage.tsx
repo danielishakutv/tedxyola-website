@@ -92,7 +92,7 @@ const LoginForm = ({ onLoggedIn }: { onLoggedIn: () => void }) => {
           autoFocus
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ted-red"
+          className="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red"
         />
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
@@ -125,10 +125,12 @@ const CopyButton = ({ value }: { value: string }) => {
           /* ignore */
         }
       }}
-      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-gray-600 hover:text-ted-red hover:bg-gray-100"
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold text-gray-700 hover:text-ted-red hover:bg-gray-100 transition-colors"
       title="Copy"
     >
-      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied
+        ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+        : <Copy className="w-3.5 h-3.5" strokeWidth={2.5} />}
       {copied ? 'Copied' : 'Copy'}
     </button>
   );
@@ -178,17 +180,18 @@ const LinkRowView = ({
           <button
             type="button"
             onClick={() => setShowQR((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium hover:border-ted-red hover:text-ted-red"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-800 text-sm font-semibold hover:border-ted-red hover:text-ted-red hover:bg-red-50 transition-colors"
           >
-            <QrCode className="w-4 h-4" />
+            <QrCode className="w-4 h-4" strokeWidth={2.25} />
             {showQR ? 'Hide QR' : 'QR'}
           </button>
           <button
             type="button"
             onClick={() => onDelete(row.slug)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-medium text-red-600 hover:border-red-600 hover:bg-red-50"
+            aria-label="Delete short link"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-red-600 text-sm font-semibold hover:border-red-600 hover:bg-red-50 transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" strokeWidth={2.25} />
           </button>
         </div>
       </div>
@@ -212,9 +215,9 @@ const LinkRowView = ({
             <a
               href={`/api/qr/${row.slug}.svg`}
               download={`tedxyola-${row.slug}.svg`}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-full font-semibold text-sm hover:border-ted-red hover:text-ted-red"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 bg-white text-gray-800 rounded-full font-semibold text-sm hover:border-ted-red hover:text-ted-red transition-colors"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4" strokeWidth={2.25} />
               Download SVG
             </a>
           </div>
@@ -288,7 +291,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <header className="bg-black text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -330,7 +333,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
                 placeholder="https://example.com/long/path?ref=…"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ted-red"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red"
               />
             </div>
             <div>
@@ -344,7 +347,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
                 onChange={(e) => setSlug(e.target.value)}
                 pattern="[a-zA-Z0-9_\-]{3,40}"
                 title="3–40 chars: letters, numbers, hyphen, underscore"
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-ted-red font-mono"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ted-red font-mono"
               />
             </div>
             <div className="flex items-end">
