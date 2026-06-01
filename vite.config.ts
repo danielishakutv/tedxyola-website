@@ -35,6 +35,10 @@ export default defineConfig({
       // Cache static assets for 1 year (using hash, safe for long-term caching)
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
+    proxy: {
+      '/api':    { target: 'http://127.0.0.1:3001', changeOrigin: true },
+      '/8fub3h': { target: 'http://127.0.0.1:3001', changeOrigin: true },
+    },
   },
 })
 

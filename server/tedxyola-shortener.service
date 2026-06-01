@@ -1,0 +1,15 @@
+[Unit]
+Description=TEDxYola URL shortener + QR API
+After=network.target
+
+[Service]
+Type=simple
+User=tedxyola
+WorkingDirectory=/home/tedxyola/shortener
+EnvironmentFile=/home/tedxyola/shortener/.env
+ExecStart=/usr/bin/node /home/tedxyola/shortener/server.js
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
