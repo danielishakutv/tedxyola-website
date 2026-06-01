@@ -86,6 +86,7 @@ export const Hero = () => {
     exit: (direction: number) => ({
       x: direction > 0 ? '-100%' : '100%',
       opacity: 0,
+      pointerEvents: 'none' as const,
     }),
   };
 
@@ -193,17 +194,19 @@ export const Hero = () => {
                   transition={{ delay: 0.7, duration: 0.6 }}
                   className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
                 >
-                  <a
-                    href={slides[currentSlide].cta1.href}
+                  <Link
+                    to={slides[currentSlide].cta1.href}
+                    style={{ touchAction: 'manipulation' }}
                     className="group w-full sm:w-auto px-8 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 transition-all hover:scale-105 flex items-center justify-center gap-2 text-lg shadow-lg shadow-ted-red/30"
                   >
                     <span>{slides[currentSlide].cta1.text}</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </a>
+                  </Link>
 
                   <Link
                     to={slides[currentSlide].cta2.href}
-                    className="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-full hover:bg-white/20 transition-all border border-white/30 text-lg"
+                    style={{ touchAction: 'manipulation' }}
+                    className="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-full hover:bg-white/20 transition-all border border-white/30 text-lg text-center"
                   >
                     {slides[currentSlide].cta2.text}
                   </Link>
