@@ -12,8 +12,16 @@ import { stmts } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGO_SVG_BUF = fs.readFileSync(path.join(__dirname, 'assets', 'logo.svg'));
-// Inline SVG fragment for the logo (used when serving SVG QR). Sized 0 0 64 64.
-const LOGO_SVG_INLINE = LOGO_SVG_BUF.toString('utf8')
+const LOGO_SVG_TEXT = LOGO_SVG_BUF.toString('utf8');
+// Detect the logo's intrinsic viewBox so the SVG QR overlay scales correctly.
+const LOGO_VB_MATCH = LOGO_SVG_TEXT.match(
+  /viewBox="\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*"/i
+);
+const LOGO_VB = LOGO_VB_MATCH
+  ? `${LOGO_VB_MATCH[1]} ${LOGO_VB_MATCH[2]} ${LOGO_VB_MATCH[3]} ${LOGO_VB_MATCH[4]}`
+  : '0 0 64 64';
+// Inline SVG fragment (no <svg> wrapper) for embedding inside other SVGs.
+const LOGO_SVG_INLINE = LOGO_SVG_TEXT
   .replace(/<\?xml[^>]*\?>/, '')
   .replace(/<svg[^>]*>/, '')
   .replace(/<\/svg>\s*$/, '');
@@ -286,7 +294,7 @@ app.get('/api/qr/:slug.svg', async (req, res) => {
           `<rect x="${cx - padSize / 2}" y="${cy - padSize / 2}" ` +
             `width="${padSize}" height="${padSize}" rx="${padRadius}" fill="#FFFFFF"/>` +
           `<svg x="${cx - logoSize / 2}" y="${cy - logoSize / 2}" ` +
-            `width="${logoSize}" height="${logoSize}" viewBox="0 0 64 64">` +
+            `width="${logoSize}" height="${logoSize}" viewBox="${LOGO_VB}">` +
             LOGO_SVG_INLINE +
           `</svg>`;
         svg = svg.replace(/<\/svg>\s*$/, `${overlay}</svg>`);
