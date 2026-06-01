@@ -1,9 +1,8 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Check, Star, Zap, Award, Target, Flame, ShoppingBag, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Section } from '@/components/common/Section';
 import { siteConfig } from '@/content/siteConfig';
-import { useState } from 'react';
-import { TicketModal } from '@/components/common/TicketModal';
 
 interface Tier {
   name: string;
@@ -14,7 +13,6 @@ interface Tier {
   features: string[];
   highlight: boolean;
   badge?: string;
-  ticketUrl: string;
 }
 
 const attendeeTiers: Tier[] = [
@@ -32,7 +30,6 @@ const attendeeTiers: Tier[] = [
       'Post-event photo gallery access',
     ],
     highlight: false,
-    ticketUrl: 'https://selar.com/68050o1l01',
   },
   {
     name: 'Ember',
@@ -51,7 +48,6 @@ const attendeeTiers: Tier[] = [
     ],
     highlight: true,
     badge: 'MOST POPULAR',
-    ticketUrl: 'https://selar.com/68050o1l01',
   },
   {
     name: 'Blaze',
@@ -71,7 +67,6 @@ const attendeeTiers: Tier[] = [
       'Priority entry (skip the queue)',
     ],
     highlight: false,
-    ticketUrl: 'https://selar.com/68050o1l01',
   },
 ];
 
@@ -144,7 +139,6 @@ const merch = [
 ];
 
 export const TicketsPage = () => {
-  const [selectedTier, setSelectedTier] = useState<Tier | null>(null);
 
   return (
     <div>
@@ -246,16 +240,16 @@ export const TicketsPage = () => {
                     {tier.price}
                   </div>
 
-                  <button
-                    onClick={() => setSelectedTier(tier)}
-                    className={`w-full py-3 rounded-full font-bold mb-8 transition-all hover:scale-105 active:scale-95 ${
+                  <Link
+                    to={`/tickets/checkout?tier=${encodeURIComponent(tier.name)}&price=${encodeURIComponent(tier.price)}`}
+                    className={`block w-full py-3 rounded-full font-bold mb-8 transition-all hover:scale-105 active:scale-95 text-center ${
                       tier.highlight
                         ? 'bg-white text-ted-red hover:bg-white/90'
                         : 'bg-ted-red text-white hover:bg-red-700'
                     }`}
                   >
                     Get Ticket
-                  </button>
+                  </Link>
 
                   <div className="space-y-3">
                     {tier.features.map((feature, idx) => (
@@ -493,31 +487,6 @@ export const TicketsPage = () => {
         </motion.div>
       </Section>
 
-      {/* Ticket Modal */}
-      <AnimatePresence>
-        {selectedTier && (
-          <TicketModal
-            isOpen={!!selectedTier}
-            onClose={() => setSelectedTier(null)}
-            ticketUrl={selectedTier.ticketUrl}
-            eventTitle={`${selectedTier.name} — ${selectedTier.price}`}
-            googleForm={{
-              actionUrl:
-                'https://docs.google.com/forms/d/e/1FAIpQLSdw8yqXqQVTHFZNmxaMTDpQhd1IfVqk3qV2dkYdMDR4Nf50HQ/formResponse',
-              fields: {
-                fullname: 'entry.1490570247',
-                phone: 'entry.263556657',
-                email: 'entry.675258623',
-              },
-              hidden: {
-                fvv: '1',
-                fbzx: '-3306221977193950438',
-                pageHistory: '0',
-              },
-            }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };
