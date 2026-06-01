@@ -347,3 +347,12 @@ Everything is set up and ready to go. Just:
 **Built with ❤️ for TEDxYola**
 
 This independent TEDx event is operated under license from TED.
+
+
+
+------------------------------------------
+cd /home/tedxyola/tedxyola-website
+git pull origin main
+npm ci --include=dev
+npm run build
+rsync -av dist/ /home/tedxyola/public_html/

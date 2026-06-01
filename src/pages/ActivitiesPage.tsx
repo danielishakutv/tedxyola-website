@@ -7,7 +7,6 @@ import {
   Sparkles,
   ArrowRight,
   Users,
-  Ticket,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -16,7 +15,6 @@ import {
   type ActivityPhase,
   type ActivityStatus,
 } from '@/content/activities';
-import { TicketModal } from '@/components/common/TicketModal';
 
 type FilterKey = 'all' | ActivityPhase;
 
@@ -48,8 +46,6 @@ const statusLabel: Record<ActivityStatus, string> = {
 };
 
 const ActivityCard = ({ activity }: { activity: Activity }) => {
-  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
-
   return (
     <article
     id={activity.id}
@@ -127,26 +123,15 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
       </ul>
 
       <div className="mt-auto flex flex-wrap items-center gap-3">
-        {activity.ticketHref && (
-          <button
-            type="button"
-            onClick={() => setIsTicketModalOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-ted-red text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-ted-red/20"
-          >
-            <Ticket className="w-4 h-4" />
-            <span>Buy Ticket</span>
-          </button>
-        )}
-        {activity.detailsHref && (
+        {activity.detailsHref ? (
           <Link
             to={activity.detailsHref}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 border-gray-200 text-gray-900 font-semibold hover:border-ted-red hover:text-ted-red transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-ted-red text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-ted-red/20"
           >
             View Details
             <ArrowRight className="w-4 h-4" />
           </Link>
-        )}
-        {!activity.ticketHref && !activity.detailsHref && activity.ctaLink && (
+        ) : activity.ctaLink ? (
           <Link
             to={activity.ctaLink}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-ted-red text-white font-semibold hover:bg-red-700 transition-colors"
@@ -154,20 +139,9 @@ const ActivityCard = ({ activity }: { activity: Activity }) => {
             {activity.ctaLabel ?? 'Learn more'}
             <ArrowRight className="w-4 h-4" />
           </Link>
-        )}
+        ) : null}
       </div>
     </div>
-
-    {activity.ticketHref && (
-      <TicketModal
-        isOpen={isTicketModalOpen}
-        onClose={() => setIsTicketModalOpen(false)}
-        ticketUrl={activity.ticketHref}
-        eventTitle={activity.title}
-        googleForm={activity.googleForm}
-        soldOut={activity.soldOut}
-      />
-    )}
   </article>
   );
 };

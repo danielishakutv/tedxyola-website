@@ -1,0 +1,16 @@
+With Dependencies 
+
+cd /home/tedxyola/tedxyola-website
+git pull origin main
+npm ci --include=dev
+npm run build
+rsync -av dist/ /home/tedxyola/public_html/
+
+
+
+Without dependencies:
+
+cd /home/tedxyola/tedxyola-website
+git pull origin main
+npm run build
+rsync -av dist/ /home/tedxyola/public_html/

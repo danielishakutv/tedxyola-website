@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Calendar,
   Clock,
   MapPin,
-  Ticket,
   Sparkles,
   Palette,
   Coffee,
@@ -13,12 +11,11 @@ import {
   Users,
   AlertCircle,
   ArrowLeft,
-  ArrowRight,
   BadgePercent,
+  Bell,
 } from 'lucide-react';
 import { activities } from '@/content/activities';
 import { siteConfig } from '@/content/siteConfig';
-import { TicketModal } from '@/components/common/TicketModal';
 
 const ticketIncludes = [
   { icon: Palette, label: 'Painting Materials' },
@@ -40,9 +37,13 @@ const parsePrice = (value?: string): number | null => {
   return Number.isFinite(num) ? num : null;
 };
 
+const WHATSAPP_NUMBER = '2348140604326';
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  "Hi! I'd like to be notified when Sip 'n Paint tickets go on sale."
+)}`;
+
 export const SipNPaintPage = () => {
   const event = activities.find((a) => a.id === 'sip-n-paint');
-  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   if (!event) {
     return (
@@ -56,9 +57,6 @@ export const SipNPaintPage = () => {
       </section>
     );
   }
-
-  const ticketHref = event.ticketHref ?? '';
-  const openTicketModal = () => setIsTicketModalOpen(true);
 
   const currentPrice = parsePrice(event.ticketPrice);
   const originalPrice = parsePrice(event.originalPrice);
@@ -80,7 +78,7 @@ export const SipNPaintPage = () => {
           aria-hidden
         />
 
-        {/* Decorative animated paint blobs — pure transform/opacity for smooth, fast motion */}
+        {/* Decorative animated paint blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden>
           <span className="absolute top-20 left-[8%] w-24 h-24 rounded-full bg-ted-red/30 blur-2xl animate-float" />
           <span className="absolute top-1/3 right-[12%] w-36 h-36 rounded-full bg-purple-500/25 blur-3xl animate-float animation-delay-300" />
@@ -150,16 +148,20 @@ export const SipNPaintPage = () => {
               </motion.div>
             )}
 
-            <div className="flex flex-wrap gap-4">
-              <button
-                type="button"
-                onClick={openTicketModal}
-                className="group inline-flex items-center gap-2 px-8 py-4 bg-ted-red text-white font-bold rounded-full hover:bg-red-700 transition-all hover:scale-105 shadow-lg shadow-ted-red/30 text-lg"
+            {/* Sales not open yet */}
+            <div className="flex flex-wrap gap-4 items-center">
+              <span className="inline-flex items-center gap-2 px-6 py-4 rounded-full bg-white/10 border border-white/25 text-white font-bold text-lg backdrop-blur">
+                <Bell className="w-5 h-5 text-ted-red" />
+                Tickets Coming Soon
+              </span>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-4 rounded-full border border-white/30 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-base font-semibold"
               >
-                <Ticket className="w-5 h-5" />
-                <span>Buy Ticket</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+                Notify me on WhatsApp
+              </a>
             </div>
           </motion.div>
         </div>
@@ -221,7 +223,7 @@ export const SipNPaintPage = () => {
               >
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <Sparkles className="w-6 h-6 text-ted-red" />
-                  Your Ticket Includes
+                  Your Ticket Will Include
                 </h2>
                 <ul className="space-y-4">
                   {ticketIncludes.map(({ icon: Icon, label }) => (
@@ -273,37 +275,20 @@ export const SipNPaintPage = () => {
               className="text-center p-10 rounded-2xl bg-gradient-to-br from-ted-red to-red-700 text-white shadow-xl"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-3">
-                Ready to paint your thoughts?
+                Ticket sales open soon
               </h2>
-              <p className="text-white/90 text-lg mb-4 max-w-xl mx-auto">
-                Reserve your seat now — registration is required and seats are limited.
+              <p className="text-white/90 text-lg mb-6 max-w-xl mx-auto">
+                Seats will be strictly limited. Tap below to get a WhatsApp ping the moment registration opens.
               </p>
-              {currentPrice !== null && (
-                <p className="text-lg sm:text-xl mb-8">
-                  Just{' '}
-                  <span className="font-extrabold text-white">{event.ticketPrice}</span>
-                  {event.originalPrice && (
-                    <>
-                      {' '}
-                      <span className="line-through text-white/60 font-semibold">
-                        {event.originalPrice}
-                      </span>
-                    </>
-                  )}
-                  {discountPercent !== null && (
-                    <span className="font-bold text-white"> · Save {discountPercent}%</span>
-                  )}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={openTicketModal}
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-ted-red font-bold rounded-full hover:bg-gray-100 transition-all hover:scale-105 text-lg"
               >
-                <Ticket className="w-5 h-5" />
-                <span>Buy Ticket</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+                <Bell className="w-5 h-5" />
+                <span>Notify Me on WhatsApp</span>
+              </a>
             </motion.div>
 
             <div className="mt-16 pt-8 border-t border-gray-200 text-center space-y-4">
@@ -322,15 +307,6 @@ export const SipNPaintPage = () => {
           </div>
         </div>
       </section>
-
-      <TicketModal
-        isOpen={isTicketModalOpen}
-        onClose={() => setIsTicketModalOpen(false)}
-        ticketUrl={ticketHref}
-        eventTitle={event.title}
-        googleForm={event.googleForm}
-        soldOut={event.soldOut}
-      />
     </>
   );
 };
