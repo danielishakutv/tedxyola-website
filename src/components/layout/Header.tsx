@@ -28,6 +28,7 @@ export const Header = () => {
     { to: '/event/theme', label: 'Theme' },
     { to: '/event/speakers', label: 'Speakers' },
     { to: '/activities', label: 'Activities' },
+    { to: '/sponsors', label: 'Sponsors' },
     { to: siteConfig.ticketUrl, label: 'Buy Ticket' },
   ];
 

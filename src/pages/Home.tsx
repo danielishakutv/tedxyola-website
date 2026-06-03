@@ -11,10 +11,15 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, Mic, Palette, Music, Coffee, Users, Sparkles, MessageCircle, Lightbulb, Camera, Award } from 'lucide-react';
 import { siteConfig } from '@/content/siteConfig';
 import { useState } from 'react';
+import { useSponsors } from '@/lib/sponsors';
 
 export const Home = () => {
   const [selectedActivity, setSelectedActivity] = useState<number | null>(null);
   const galleryPreview = galleryImages.slice(0, 8);
+  const { sponsors: apiSponsors } = useSponsors();
+  const marqueePartners = apiSponsors.length > 0
+    ? apiSponsors.map((s) => ({ name: s.name, logo: s.imageUrl, url: s.website }))
+    : siteConfig.partners;
 
   const activities = [
     {
@@ -342,7 +347,7 @@ export const Home = () => {
 
             <div className="overflow-hidden">
               <div className="flex gap-8 partners-marquee">
-                {[...siteConfig.partners, ...siteConfig.partners].map((partner, idx) => {
+                {[...marqueePartners, ...marqueePartners].map((partner, idx) => {
                   const content = (
                     <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center p-8 hover:bg-gray-200 transition-colors">
                       <img

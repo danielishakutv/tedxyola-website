@@ -19,6 +19,7 @@ const ActivitiesPage = lazy(() => import('./pages/ActivitiesPage').then(module =
 const SipNPaintPage = lazy(() => import('./pages/SipNPaintPage').then(module => ({ default: module.SipNPaintPage })));
 const TicketCheckoutPage = lazy(() => import('./pages/TicketCheckoutPage').then(module => ({ default: module.TicketCheckoutPage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
+const SponsorsPage = lazy(() => import('./pages/SponsorsPage').then(module => ({ default: module.SponsorsPage })));
 
 // Loading component
 const LoadingScreen = () => (
@@ -52,6 +53,8 @@ const AppRoutes = () => {
           <Route path="/snp" element={<SipNPaintPage />} />
           <Route path="/tickets/checkout" element={<TicketCheckoutPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/sponsors" element={<SponsorsPage />} />
+          <Route path="/event/sponsors" element={<SponsorsPage />} />
 
           {/* 404 fallback */}
           <Route path="*" element={<Home />} />
