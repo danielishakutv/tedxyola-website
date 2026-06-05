@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { FloatingWhatsapp } from '@/components/common/FloatingWhatsapp';
+import { PopupHost } from '@/components/common/PopupHost';
 
 interface LayoutProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 pt-16 lg:pt-20 overflow-x-hidden">{children}</main>
       <FloatingWhatsapp />
       <Footer />
+      <PopupHost />
     </div>
   );
 };
