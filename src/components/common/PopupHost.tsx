@@ -82,7 +82,7 @@ export const PopupHost = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 backdrop-blur-sm"
         onClick={close}
         role="dialog"
         aria-modal="true"
@@ -94,7 +94,7 @@ export const PopupHost = () => {
           exit={{ scale: 0.92, y: 20, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 24 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md sm:max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden text-gray-900"
+          className="relative w-full max-w-md sm:max-w-lg my-auto bg-white rounded-2xl shadow-2xl text-gray-900 max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden"
         >
           <button
             onClick={close}
@@ -104,19 +104,20 @@ export const PopupHost = () => {
             <X className="w-5 h-5" />
           </button>
 
-          {current.imageUrl && (
-            <div className="w-full aspect-[16/9] bg-gray-100 overflow-hidden">
-              <img
-                src={current.imageUrl}
-                alt={current.title}
-                className="w-full h-full object-cover"
-                loading="eager"
-                decoding="async"
-              />
-            </div>
-          )}
+          <div className="overflow-y-auto overscroll-contain flex-1">
+            {current.imageUrl && (
+              <div className="w-full bg-gray-100 flex items-center justify-center">
+                <img
+                  src={current.imageUrl}
+                  alt={current.title}
+                  className="w-full max-h-[50vh] object-contain"
+                  loading="eager"
+                  decoding="async"
+                />
+              </div>
+            )}
 
-          <div className="p-6 sm:p-7">
+            <div className="p-6 sm:p-7">
             <h2
               id={`popup-title-${current.id}`}
               className="text-2xl sm:text-3xl font-bold font-display leading-tight mb-3"
@@ -127,22 +128,27 @@ export const PopupHost = () => {
               {current.body}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              {current.buttonLabel && current.buttonUrl && (
+            <div className="flex flex-col sm:flex-row gap-3" style={{ touchAction: 'manipulation' }}>
+                {current.buttonLabel && current.buttonUrl && (
+                  <button
+                    type="button"
+                    onClick={handleCta}
+                    style={{ touchAction: 'manipulation' }}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-ted-red hover:bg-red-700 text-white font-semibold rounded-full transition-all hover:scale-[1.02] active:scale-95"
+                  >
+                    <span>{current.buttonLabel}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
                 <button
-                  onClick={handleCta}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-ted-red hover:bg-red-700 text-white font-semibold rounded-full transition-all hover:scale-[1.02]"
+                  type="button"
+                  onClick={close}
+                  style={{ touchAction: 'manipulation' }}
+                  className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-full transition-colors active:scale-95"
                 >
-                  <span>{current.buttonLabel}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {current.buttonLabel && current.buttonUrl ? 'No thanks' : 'Close'}
                 </button>
-              )}
-              <button
-                onClick={close}
-                className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-full transition-colors"
-              >
-                {current.buttonLabel && current.buttonUrl ? 'No thanks' : 'Close'}
-              </button>
+              </div>
             </div>
           </div>
         </motion.div>
