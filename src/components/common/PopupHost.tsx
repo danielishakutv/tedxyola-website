@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { X, ArrowRight } from 'lucide-react';
 import {
@@ -12,10 +13,24 @@ import {
 
 /**
  * Renders one popup at a time on top of the page.
- * - Fetches active popups from the API on mount.
- * - Filters out those the user has already seen based on frequency.
- * - Shows the highest-priority popup first; after dismiss, moves to the next.
+ *
+ * Mounted via React Portal at <body> so it is never nested inside a
+ * transformed / stacking-context-creating ancestor. Uses z-index 2147483000
+ * (just under the max int z) so it sits above every other fixed element on
+ * the site, including the floating WhatsApp button (z-1100), service-worker
+ * banners, etc.
+ *
+ * Best-practice mobile tap handling:
+ *  - createPortal at body level — no parent transform / overflow can trap it.
+ *  - target-equality check on backdrop (no stopPropagation tricks).
+ *  - touch-action: manipulation on every tappable element.
+ *  - pointer-events: none on inner spans/svgs so the <button> itself is the
+ *    real touch target on iOS Safari.
+ *  - user-select: none on buttons to suppress long-press text callout.
  */
+
+const Z_TOP = 2147483000; // effectively top of stacking — beats every other fixed layer
+
 export const PopupHost = () => {
   const { popups, loading } = useActivePopups();
   const [index, setIndex] = useState(0);
@@ -60,6 +75,7 @@ export const PopupHost = () => {
   }, [current, dismissed, close]);
 
   if (loading || !current || dismissed) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleCta = () => {
     if (!current.buttonUrl) return;
@@ -73,19 +89,25 @@ export const PopupHost = () => {
     close();
   };
 
-  // Close only when the click is truly on the backdrop, not bubbled from inside.
   const onBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) close();
   };
 
-  return (
+  const tapStyle: React.CSSProperties = {
+    touchAction: 'manipulation',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
+  };
+
+  const modal = (
     <div
-      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/70 backdrop-blur-sm"
       onClick={onBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby={`popup-title-${current.id}`}
-      style={{ isolation: 'isolate' }}
+      style={{ zIndex: Z_TOP, isolation: 'isolate' }}
     >
       <motion.div
         key={current.id}
@@ -98,7 +120,7 @@ export const PopupHost = () => {
           type="button"
           onClick={close}
           aria-label="Close"
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          style={tapStyle}
           className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer"
         >
           <X className="w-5 h-5 pointer-events-none" />
@@ -134,11 +156,8 @@ export const PopupHost = () => {
                 <button
                   type="button"
                   onClick={handleCta}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}
-                  className="cursor-pointer select-none inline-flex items-center justify-center gap-2 px-6 py-3 bg-ted-red hover:bg-red-700 text-white font-semibold rounded-full transition-colors active:scale-95"
+                  style={tapStyle}
+                  className="cursor-pointer inline-flex items-center justify-center gap-2 px-6 py-3 bg-ted-red hover:bg-red-700 text-white font-semibold rounded-full transition-colors active:scale-95"
                 >
                   <span className="pointer-events-none">{current.buttonLabel}</span>
                   <ArrowRight className="w-4 h-4 pointer-events-none" />
@@ -147,11 +166,8 @@ export const PopupHost = () => {
               <button
                 type="button"
                 onClick={close}
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-                className="cursor-pointer select-none inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-full transition-colors active:scale-95"
+                style={tapStyle}
+                className="cursor-pointer inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-full transition-colors active:scale-95"
               >
                 <span className="pointer-events-none">
                   {current.buttonLabel && current.buttonUrl ? 'No thanks' : 'Close'}
@@ -163,4 +179,6 @@ export const PopupHost = () => {
       </motion.div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 };

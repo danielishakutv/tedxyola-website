@@ -52,14 +52,14 @@ export const FloatingWhatsapp = () => {
   return (
     <div
       ref={containerRef}
-      className={`fixed right-3 bottom-3 sm:right-5 sm:bottom-5 z-[1100] flex flex-col items-end transition-all duration-300 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+      className={`fixed right-3 bottom-3 sm:right-5 sm:bottom-5 z-[1100] flex flex-col items-end transition-all duration-300 pointer-events-none ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
       }`}
     >
       {/* Contact options popup */}
       <div
         className={`mb-3 w-64 origin-bottom-right overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all duration-200 ${
-          open ? 'opacity-100 scale-100 translate-y-0' : 'pointer-events-none opacity-0 scale-95 translate-y-2'
+          open ? 'pointer-events-auto opacity-100 scale-100 translate-y-0' : 'pointer-events-none opacity-0 scale-95 translate-y-2'
         }`}
         role="dialog"
         aria-label="Chat with us on WhatsApp"
@@ -102,7 +102,7 @@ export const FloatingWhatsapp = () => {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={open ? 'Close WhatsApp contacts' : 'Chat with us on WhatsApp'}
-        className="group flex items-center gap-2 rounded-full bg-[#25D366] py-2.5 pl-3 pr-4 text-white shadow-lg transition-all hover:bg-[#1ebe5d] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/30"
+        className="pointer-events-auto group flex items-center gap-2 rounded-full bg-[#25D366] py-2.5 pl-3 pr-4 text-white shadow-lg transition-all hover:bg-[#1ebe5d] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-[#25D366]/30"
       >
         {open ? (
           <X className="h-5 w-5" />
