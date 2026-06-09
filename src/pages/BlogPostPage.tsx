@@ -3,7 +3,14 @@ import { motion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
 import { Calendar, User, ArrowLeft, ArrowRight, Clock, Share2 } from 'lucide-react';
 import { Section } from '@/components/common/Section';
-import { useBlog, useBlogs, formatBlogDate, readTimeOf, excerptOf } from '@/lib/blogs';
+import {
+  useBlog,
+  useBlogs,
+  formatBlogDate,
+  readTimeOf,
+  excerptOf,
+  sanitizeBlogHtml,
+} from '@/lib/blogs';
 
 export const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -131,9 +138,10 @@ export const BlogPostPage = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="prose prose-lg prose-invert max-w-none text-white/85 leading-relaxed whitespace-pre-wrap">
-            {blog.content}
-          </div>
+          <div
+            className="blog-content"
+            dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(blog.content) }}
+          />
         </motion.div>
       </Section>
 

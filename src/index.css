@@ -155,6 +155,131 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Rich-text blog content rendered from admin HTML.
+     Restores formatting that Tailwind's preflight resets, since the
+     @tailwindcss/typography (prose) plugin is not installed. */
+  .blog-content {
+    @apply text-white/85 leading-relaxed;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .blog-content > :first-child {
+    margin-top: 0;
+  }
+
+  .blog-content p {
+    margin: 0 0 1.25em;
+  }
+
+  .blog-content h1,
+  .blog-content h2,
+  .blog-content h3,
+  .blog-content h4 {
+    @apply font-display font-bold text-white;
+    line-height: 1.25;
+    margin: 1.8em 0 0.7em;
+  }
+
+  .blog-content h1 {
+    font-size: 1.9rem;
+  }
+
+  .blog-content h2 {
+    font-size: 1.55rem;
+  }
+
+  .blog-content h3 {
+    font-size: 1.3rem;
+  }
+
+  .blog-content h4 {
+    font-size: 1.1rem;
+  }
+
+  .blog-content a {
+    @apply text-ted-red underline underline-offset-2;
+    transition: opacity 0.2s ease;
+  }
+
+  .blog-content a:hover {
+    opacity: 0.8;
+  }
+
+  .blog-content strong,
+  .blog-content b {
+    @apply text-white font-semibold;
+  }
+
+  .blog-content em,
+  .blog-content i {
+    font-style: italic;
+  }
+
+  .blog-content u {
+    text-decoration: underline;
+  }
+
+  .blog-content ul,
+  .blog-content ol {
+    margin: 0 0 1.25em;
+    padding-left: 1.5em;
+  }
+
+  .blog-content ul {
+    list-style: disc;
+  }
+
+  .blog-content ol {
+    list-style: decimal;
+  }
+
+  .blog-content li {
+    margin: 0.4em 0;
+  }
+
+  .blog-content li > ul,
+  .blog-content li > ol {
+    margin: 0.4em 0;
+  }
+
+  .blog-content blockquote {
+    @apply border-l-4 border-ted-red text-white/70 italic;
+    margin: 1.5em 0;
+    padding: 0.25em 0 0.25em 1.25em;
+  }
+
+  .blog-content img {
+    @apply rounded-xl;
+    max-width: 100%;
+    height: auto;
+    margin: 1.5em 0;
+  }
+
+  .blog-content hr {
+    @apply border-white/15;
+    margin: 2em 0;
+  }
+
+  .blog-content pre {
+    @apply bg-white/5 rounded-lg;
+    padding: 1em;
+    overflow-x: auto;
+    margin: 0 0 1.25em;
+  }
+
+  .blog-content code {
+    @apply bg-white/10 rounded;
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
+  }
+
+  .blog-content pre code {
+    @apply bg-transparent p-0;
+  }
 }
 
 @layer utilities {

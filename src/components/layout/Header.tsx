@@ -110,6 +110,13 @@ export const Header = () => {
             </Link>
 
             <Link
+              to="/blog"
+              className="text-white hover:text-ted-red transition-colors font-medium"
+            >
+              Blog
+            </Link>
+
+            <Link
               to="/about"
               className="text-white hover:text-ted-red transition-colors font-medium"
             >
@@ -190,6 +197,13 @@ export const Header = () => {
                   className="block px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
                   Past Events
+                </Link>
+
+                <Link
+                  to="/blog"
+                  className="block px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  Blog
                 </Link>
 
                 <Link

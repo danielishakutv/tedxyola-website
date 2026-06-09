@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 
 export type Blog = {
   id: string;
@@ -88,13 +88,65 @@ export function formatBlogDate(iso: string): string {
   }
 }
 
+/**
+ * Convert rich-text HTML to plain text (tags removed, entities like &nbsp;
+ * decoded). Used for excerpts, read-time and search where markup would leak.
+ */
+export function stripHtml(html: string): string {
+  if (!html) return '';
+  if (typeof document === 'undefined') {
+    return html.replace(/<[^>]*>/g, ' ');
+  }
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+/**
+ * Sanitize admin-authored HTML before rendering it with dangerouslySetInnerHTML.
+ * Strips active content (script/style/iframeâ€¦), inline event handlers and
+ * javascript: URLs, while preserving formatting markup from the editor.
+ */
+export function sanitizeBlogHtml(html: string): string {
+  if (!html) return '';
+  if (typeof document === 'undefined') return html;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+
+  tmp
+    .querySelectorAll('script, style, iframe, object, embed, link, meta, form')
+    .forEach((el) => el.remove());
+
+  tmp.querySelectorAll('*').forEach((el) => {
+    Array.from(el.attributes).forEach((attr) => {
+      const name = attr.name.toLowerCase();
+      const value = attr.value.replace(/\s+/g, '').toLowerCase();
+      if (name.startsWith('on')) {
+        el.removeAttribute(attr.name);
+      } else if (
+        (name === 'href' || name === 'src' || name === 'xlink:href') &&
+        value.startsWith('javascript:')
+      ) {
+        el.removeAttribute(attr.name);
+      }
+    });
+    // Open links in a new, safe tab
+    if (el.tagName === 'A' && el.getAttribute('href')) {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+
+  return tmp.innerHTML;
+}
+
 export function excerptOf(content: string, maxLen = 160): string {
-  const plain = content.replace(/\s+/g, ' ').trim();
+  const plain = stripHtml(content).replace(/\s+/g, ' ').trim();
   if (plain.length <= maxLen) return plain;
-  return plain.slice(0, maxLen).replace(/\s+\S*$/, '') + '…';
+  return plain.slice(0, maxLen).replace(/\s+\S*$/, '') + 'â€¦';
 }
 
 export function readTimeOf(content: string): number {
-  const words = content.trim().split(/\s+/).length;
+  const words = stripHtml(content).trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
