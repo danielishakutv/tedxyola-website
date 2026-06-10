@@ -180,6 +180,14 @@ export const Footer = () => {
               </li>
               <li>
                 <Link
+                  to="/spotlight"
+                  className="text-white/70 hover:text-ted-red transition-colors"
+                >
+                  Startup Spotlight
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/gallery"
                   className="text-white/70 hover:text-ted-red transition-colors"
                 >

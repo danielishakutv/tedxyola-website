@@ -22,6 +22,8 @@ const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ defau
 const SponsorsPage = lazy(() => import('./pages/SponsorsPage').then(module => ({ default: module.SponsorsPage })));
 const BlogsPage = lazy(() => import('./pages/BlogsPage').then(module => ({ default: module.BlogsPage })));
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage').then(module => ({ default: module.BlogPostPage })));
+const SpotlightPage = lazy(() => import('./pages/SpotlightPage').then(module => ({ default: module.SpotlightPage })));
+const SpotlightApplyPage = lazy(() => import('./pages/SpotlightApplyPage').then(module => ({ default: module.SpotlightApplyPage })));
 
 // Loading component
 const LoadingScreen = () => (
@@ -60,6 +62,8 @@ const AppRoutes = () => {
           <Route path="/blog" element={<BlogsPage />} />
           <Route path="/blog/:id" element={<BlogPostPage />} />
           <Route path="/news" element={<BlogsPage />} />
+          <Route path="/spotlight" element={<SpotlightPage />} />
+          <Route path="/spotlight/apply" element={<SpotlightApplyPage />} />
 
           {/* 404 fallback */}
           <Route path="*" element={<Home />} />
